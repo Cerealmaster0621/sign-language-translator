@@ -66,8 +66,9 @@ def run_classifier(model_path):
             logging.error("Can't receive frame (stream end?). Exiting ...")
             break
 
+        frame = cv2.flip(frame, 1)  # Flip the frame horizontally
         frame = process_frame(frame, hands, mp_drawing, mp_hands, mp_drawing_styles, model)
-
+        
         cv2.imshow("Hand Gesture Recognition", frame)
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break

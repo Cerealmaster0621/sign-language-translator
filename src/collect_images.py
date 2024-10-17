@@ -43,6 +43,8 @@ def collect_images(start, end, dataset_size, subdirectory):
             elif key == ord("q"):
                 break
 
+            frame = cv2.flip(frame, 1)  # Flip the frame horizontally
+
         if key == ord("q"):
             break
 
