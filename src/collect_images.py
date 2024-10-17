@@ -2,6 +2,11 @@ import cv2
 import os
 from constants import DATA_PATH
 
+## Here you can collect images for your dataset
+## Run this file with python collect_images.py
+## You can change the number of classes and the dataset size
+## The images will be saved in the data/numbers or data/alphabets folder
+
 def create_directory(path):
     if not os.path.exists(path):
         os.makedirs(path)

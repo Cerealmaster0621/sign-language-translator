@@ -5,6 +5,10 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, classification_report
 import logging
 
+## After creating data.pickle file, run this file to train your model
+## Run this file with python train_classifier.py
+## The model will be saved as model.pickle file
+
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 

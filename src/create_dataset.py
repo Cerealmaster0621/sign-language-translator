@@ -5,6 +5,10 @@ import pickle
 from constants import DATA_PATH_NUMBERS
 import logging
 
+## After collecting images, run this file to create a dataset for your model
+## Run this file with python create_dataset.py
+## The images will be saved as pickle file (data.pickle)
+
 # Hand detection
 mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils

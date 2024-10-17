@@ -4,6 +4,9 @@ import pickle
 import numpy as np
 import logging
 
+## After creating data.pickle file, run this file to test your model
+## Run this file with python test_classifier.py
+
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 
