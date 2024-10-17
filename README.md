@@ -21,7 +21,9 @@ python3 main.py --help
 ## Usage
 
 - Collect data: `python main.py --collect [SUBDIR] [START] [END] [SIZE]`
+  - Example: `python main.py --collect numbers 0 10 100` => Collect 100 images of numbers from 0 to 10
 - Train model: `python main.py --train [SUBDIR](optional)`
+  - Example: `python main.py --train numbers` => Train the model with the numbers dataset(subdirectory of data folder)
 - Test model: `python main.py --test(optional)`
 
 For detailed usage instructions, run: `python main.py --help`
