@@ -1,6 +1,7 @@
+data/alphabets/*
+!data/alphabets/.gitkeep
 
-data/alphabets
-!data/alphabets/README.md
+data/numbers/*
+!data/numbers/.gitkeep
 
-data/numbers
-!data/numbers/README.md
+!data/.gitkeep

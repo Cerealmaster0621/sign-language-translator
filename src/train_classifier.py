@@ -4,46 +4,49 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, classification_report
 import logging
+import os
 
-## After creating data.pickle file, run this file to train your model
-## Run this file with python train_classifier.py
-## The model will be saved as model.pickle file
+def load_data(file_path):
+    try:
+        with open(file_path, "rb") as f:
+            data_dict = pickle.load(f)
+        return np.asarray(data_dict["data"]), np.asarray(data_dict["labels"])
+    except FileNotFoundError:
+        logging.error(f"{file_path} not found. Please run create_dataset.py first.")
+        return None, None
 
-# Set up logging
-logging.basicConfig(level=logging.INFO)
+def train_model(data, labels):
+    x_train, x_test, y_train, y_test = train_test_split(data, labels, test_size=0.2, random_state=42, stratify=labels)
+    model = RandomForestClassifier(n_estimators=100, random_state=42)
+    model.fit(x_train, y_train)
+    return model, x_test, y_test
 
-# Load the data
-try:
-    with open("./data.pickle", "rb") as f:
-        data_dict = pickle.load(f)
-except FileNotFoundError:
-    logging.error("data.pickle file not found. Please run create_dataset.py first.")
-    exit(1)
+def evaluate_model(model, x_test, y_test):
+    y_pred = model.predict(x_test)
+    accuracy = accuracy_score(y_test, y_pred)
+    logging.info(f"Accuracy: {accuracy:.2%}")
+    logging.info("Classification Report:")
+    logging.info("\n" + classification_report(y_test, y_pred))
 
-data = np.asarray(data_dict["data"])
-labels = np.asarray(data_dict["labels"])
+def save_model(model, output_file):
+    try:
+        with open(output_file, "wb") as f:
+            pickle.dump({"model": model}, f)
+        logging.info(f"Model saved to {output_file}")
+    except IOError:
+        logging.error(f"Error saving model to {output_file}")
 
-# Split the data
-x_train, x_test, y_train, y_test = train_test_split(data, labels, test_size=0.2, random_state=42, stratify=labels)
-
-# Train the model
-model = RandomForestClassifier(n_estimators=100, random_state=42)
-model.fit(x_train, y_train)
-
-# Evaluate the model
-y_pred = model.predict(x_test)
-accuracy = accuracy_score(y_test, y_pred)
-logging.info(f"Accuracy: {accuracy:.2%}")
-
-# Print detailed classification report
-logging.info("Classification Report:")
-logging.info("\n" + classification_report(y_test, y_pred))
-
-# Save the model
-output_file = "model.pickle"
-try:
-    with open(output_file, "wb") as f:
-        pickle.dump({"model": model}, f)
-    logging.info(f"Model saved to {output_file}")
-except IOError:
-    logging.error(f"Error saving model to {output_file}")
+def train_and_save_classifier(input_file, output_file):
+    logging.basicConfig(level=logging.INFO)
+    
+    if os.path.exists(output_file):
+        os.remove(output_file)
+        logging.info(f"Deleted existing {output_file}")
+    
+    data, labels = load_data(input_file)
+    if data is None or labels is None:
+        return
+    
+    model, x_test, y_test = train_model(data, labels)
+    evaluate_model(model, x_test, y_test)
+    save_model(model, output_file)
