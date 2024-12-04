@@ -41,17 +41,12 @@ def create_dataset(data_path: str) -> Tuple[List[List[int]], List[str]]:
         logging.error(f"Error: Directory not found: {data_path}")
         return data, labels
 
-    # If data_path is DATA_PATH, process all subdirectories
-    if data_path == DATA_PATH:
-        logging.info("Regenerating datasets for all subdirectories")
-        subdirs = [os.path.join(data_path, d) for d in os.listdir(data_path) if os.path.isdir(os.path.join(data_path, d))]
-    else:
-        subdirs = [data_path]
-
-    for subdir in subdirs:
-        logging.info(f"Processing directory: {subdir}")
-        for dir_ in os.listdir(subdir):
-            dir_path = os.path.join(subdir, dir_)
+    # Process numbers first
+    numbers_path = os.path.join(DATA_PATH, "numbers")
+    if os.path.exists(numbers_path):
+        logging.info(f"Processing numbers directory: {numbers_path}")
+        for dir_ in sorted(os.listdir(numbers_path)):
+            dir_path = os.path.join(numbers_path, dir_)
             if not os.path.isdir(dir_path):
                 continue
             for image_name in os.listdir(dir_path):
@@ -60,7 +55,23 @@ def create_dataset(data_path: str) -> Tuple[List[List[int]], List[str]]:
                     data_aux, label = process_image(full_image_path, hands)
                     if data_aux and label:
                         data.append(data_aux)
-                        labels.append(label)
+                        labels.append(f"num_{label}")
+
+    # Then process alphabets
+    alphabets_path = os.path.join(DATA_PATH, "alphabets")
+    if os.path.exists(alphabets_path):
+        logging.info(f"Processing alphabets directory: {alphabets_path}")
+        for dir_ in sorted(os.listdir(alphabets_path)):
+            dir_path = os.path.join(alphabets_path, dir_)
+            if not os.path.isdir(dir_path):
+                continue
+            for image_name in os.listdir(dir_path):
+                if image_name.lower().endswith(('.png', '.jpg', '.jpeg')):
+                    full_image_path = os.path.join(dir_path, image_name)
+                    data_aux, label = process_image(full_image_path, hands)
+                    if data_aux and label:
+                        data.append(data_aux)
+                        labels.append(f"alpha_{label}")
 
     if not data:
         logging.error("No valid images found in the dataset.")

@@ -32,6 +32,8 @@ def collect_images(start, end, dataset_size, subdirectory):
                 print("Failed to capture image")
                 continue
             
+            frame = cv2.flip(frame, 1)  # Flip the frame horizontally
+            
             cv2.putText(frame, f"Class {class_name}. Image count: {len(os.listdir(class_path))}", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
             cv2.putText(frame, "Press 'c' to capture or 'q' to quit", (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
             
@@ -42,8 +44,6 @@ def collect_images(start, end, dataset_size, subdirectory):
                 cv2.imwrite(f"{class_path}/{len(os.listdir(class_path))}.jpg", frame)
             elif key == ord("q"):
                 break
-
-            frame = cv2.flip(frame, 1)  # Flip the frame horizontally
 
         if key == ord("q"):
             break

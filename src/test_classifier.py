@@ -8,7 +8,7 @@ def load_model(model_path):
     try:
         with open(model_path, "rb") as f:
             model_dict = pickle.load(f)
-        return model_dict["model"]
+        return model_dict
     except FileNotFoundError:
         logging.error(f"{model_path} not found. Please run train_classifier.py first.")
         return None
@@ -20,7 +20,7 @@ def setup_mediapipe():
     hands = mp_hands.Hands(static_image_mode=False, max_num_hands=1, min_detection_confidence=0.5)
     return mp_hands, mp_drawing, mp_drawing_styles, hands
 
-def process_frame(frame, hands, mp_drawing, mp_hands, mp_drawing_styles, model):
+def process_frame(frame, hands, mp_drawing, mp_hands, mp_drawing_styles, model_dict):
     image_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     results = hands.process(image_rgb)
 
@@ -41,8 +41,10 @@ def process_frame(frame, hands, mp_drawing, mp_hands, mp_drawing_styles, model):
                 y = landmark.y * frame.shape[0]
                 data_aux.extend([x, y])
 
-        prediction = model.predict([np.asarray(data_aux)])
-        cv2.putText(frame, f"Prediction: {prediction[0]}", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+        # Get prediction and convert back to original label
+        numerical_prediction = model_dict["model"].predict([np.asarray(data_aux)])
+        prediction = model_dict["label_encoder"].inverse_transform(numerical_prediction)[0]
+        cv2.putText(frame, f"Prediction: {prediction}", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
     return frame
 

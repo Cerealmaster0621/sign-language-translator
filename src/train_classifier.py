@@ -2,6 +2,7 @@ import pickle
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier, VotingClassifier
+from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score, classification_report
 import logging
 import os
@@ -13,16 +14,27 @@ def load_data(file_path):
             data_dict = pickle.load(f)
         data = np.asarray(data_dict["data"])
         labels = np.asarray(data_dict["labels"])
-        unique_labels = np.unique(labels)
-        label_to_int = {label: i for i, label in enumerate(unique_labels)}
-        labels = np.array([label_to_int[label] for label in labels])
-        return data, labels
+        
+        # Extract the actual label from the prefix format
+        cleaned_labels = np.array([label.split('_')[1] for label in labels])
+        unique_labels = sorted(np.unique(cleaned_labels))
+        
+        logging.info(f"Loaded dataset with {len(unique_labels)} unique classes")
+        logging.info(f"Labels: {unique_labels}")
+        return data, cleaned_labels
     except FileNotFoundError:
         logging.error(f"{file_path} not found. Please run create_dataset.py first.")
         return None, None
 
 def train_model(data, labels):
-    x_train, x_test, y_train, y_test = train_test_split(data, labels, test_size=0.2, random_state=42, stratify=labels)
+    # Create a LabelEncoder instance
+    le = LabelEncoder()
+    # Fit and transform the labels
+    encoded_labels = le.fit_transform(labels)
+    
+    x_train, x_test, y_train, y_test = train_test_split(
+        data, encoded_labels, test_size=0.2, random_state=42, stratify=encoded_labels
+    )
 
     # Random Forest Classifier
     rf_model = RandomForestClassifier(n_estimators=100, random_state=42)
@@ -42,39 +54,33 @@ def train_model(data, labels):
     # Voting Classifier
     ensemble_model = VotingClassifier(
         estimators=[('rf', rf_model), ('xgb', xgb_model)],
-        voting='soft'
+        voting='hard'
     )
     
     ensemble_model.fit(x_train, y_train)
+    y_pred = ensemble_model.predict(x_test)
     
-    return ensemble_model, x_test, y_test
-
-def evaluate_model(model, x_test, y_test):
-    y_pred = model.predict(x_test)
-    accuracy = accuracy_score(y_test, y_pred)
+    # Convert predictions back to original labels for the report
+    y_test_original = le.inverse_transform(y_test)
+    y_pred_original = le.inverse_transform(y_pred)
+    
+    accuracy = accuracy_score(y_test_original, y_pred_original)
+    report = classification_report(y_test_original, y_pred_original)
+    
     logging.info(f"Accuracy: {accuracy:.2%}")
     logging.info("Classification Report:")
-    logging.info("\n" + classification_report(y_test, y_pred))
-
-def save_model(model, output_file):
-    try:
-        with open(output_file, "wb") as f:
-            pickle.dump({"model": model}, f)
-        logging.info(f"Model saved to {output_file}")
-    except IOError:
-        logging.error(f"Error saving model to {output_file}")
-
-def train_and_save_classifier(input_file, output_file):
-    logging.basicConfig(level=logging.INFO)
+    logging.info(f"\n{report}")
     
-    if os.path.exists(output_file):
-        os.remove(output_file)
-        logging.info(f"Deleted existing {output_file}")
-    
-    data, labels = load_data(input_file)
+    # Save the label encoder along with the model
+    return {"model": ensemble_model, "label_encoder": le}, x_test, y_test
+
+def train_and_save_classifier(data_file, model_file):
+    data, labels = load_data(data_file)
     if data is None or labels is None:
         return
     
-    model, x_test, y_test = train_model(data, labels)
-    evaluate_model(model, x_test, y_test)
-    save_model(model, output_file)
+    model_dict, x_test, y_test = train_model(data, labels)
+    
+    with open(model_file, "wb") as f:
+        pickle.dump(model_dict, f)
+    logging.info(f"Model saved to {model_file}")
