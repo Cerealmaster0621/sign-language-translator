@@ -5,3 +5,5 @@ data/numbers/*
 !data/numbers/.gitkeep
 
 !data/.gitkeep
+
+.DS_Store

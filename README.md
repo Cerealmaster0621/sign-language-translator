@@ -2,6 +2,10 @@
 
 A real-time sign language translation system using computer vision and machine learning.
 
+## Demo
+
+![Demo Video](./images/sr_sign_language_translator.gif)
+
 ## Features
 
 - Real-time hand gesture recognition
