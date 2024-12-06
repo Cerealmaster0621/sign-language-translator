@@ -4,7 +4,7 @@ A real-time sign language translation system using computer vision and machine l
 
 ## Demo
 
-![Demo Video](./images/sr_sign_language_translator.gif)
+![Demo Video](./images/demo.gif)
 
 ## Features
 
